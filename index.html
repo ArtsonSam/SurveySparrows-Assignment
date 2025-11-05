@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SurveySparrows Assignment</title>
+
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: "Poppins", sans-serif; }
+    body {
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      transition: background 1s ease-in-out;
+    }
+.calendar {
+  background: linear-gradient(135deg, #f5f3ff, #e0e7ff, #ede9fe);
+  backdrop-filter: blur(10px);
+  border-radius: 24px;
+  padding: 30px;
+  width: 95%;
+  max-width: 1000px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15),
+              inset 0 0 25px rgba(79, 70, 229, 0.15);
+  transition: transform 0.3s, box-shadow 0.3s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+    .calendar:hover { transform: scale(1.01); }
+    .calendar h1 {
+      text-align: center;
+      margin-bottom: 10px;
+      color: #4f46e5;
+    }
+    .calendar header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      width: 100%;
+    }
+    .calendar button {
+      background: #4f46e5;
+      border: none;
+      color: white;
+      border-radius: 10px;
+      padding: 8px 16px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: 0.2s;
+    }
+    .calendar button:hover { opacity: 0.9; transform: translateY(-2px); }
+    .calendar .grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 12px;
+      text-align: center;
+      width: 100%;
+    }
+    .day {
+      background: white;
+      border-radius: 16px;
+      padding: 10px;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+      position: relative;
+      transition: transform 0.2s, background 0.3s, color 0.3s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+    }
+    .day:hover { transform: translateY(-3px); background: blue; }
+    .day.today { border: 2px solid #4f46e5; }
+
+    /* 🗓️ Weekend Dark Highlight */
+    .day.weekend {
+      background: linear-gradient(145deg, #4f46e5, #3730a3);
+      color: #f9fafb;
+      box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+    }
+    .day.weekend .day-header,
+    .day.weekend .day-number {
+      color: #e0e7ff;
+    }
+    .day.weekend:hover {
+      background: linear-gradient(145deg, #4338ca, #312e81);
+      transform: translateY(-3px);
+    }
+
+    .day-top {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+    .day-header {
+      font-size: 12px;
+      color: #6b21a8;
+      font-weight: 600;
+    }
+    .day-number {
+      font-weight: bold;
+      color: #4f46e5;
+      font-size: 18px;
+      line-height: 1.2;
+    }
+    .event {
+      background: #4f46e5;
+      color: white;
+      border-radius: 8px;
+      padding: 4px 6px;
+      font-size: 12px;
+      margin-top: 6px;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      white-space: nowrap;
+      width: 100%;
+    }
+    .past-day {
+      background: linear-gradient(145deg, #818cf8, #6366f1);
+      color: #f8fafc;
+      box-shadow: none;
+    }
+    .past-day .day-header,
+    .past-day .day-number { color: #e0e7ff; }
+
+    .quote {
+      margin-top: 20px;
+      padding: 10px 20px;
+      text-align: center;
+      font-style: italic;
+      font-size: 15px;
+      color: #4338ca;
+      background: linear-gradient(to right, #c7d2fe, #a5b4fc);
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      width: 100%;
+    }
+
+    /* ⏰ Current time indicator */
+ .today::after {
+  content: "";
+  position: absolute;
+  left: 10%;
+  right: 10%;
+  height: 2px;
+  background: #4f46e5;
+  border-radius: 2px;
+  z-index: 10;
+  transition: top 0.5s ease;
+}
+
+
+    /* ➕ Add Event Modal */
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 100;
+    }
+    .modal.active { display: flex; }
+    .modal-content {
+      background: white;
+      padding: 20px;
+      border-radius: 16px;
+      width: 300px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+      text-align: center;
+    }
+    .modal-content input {
+      width: 100%;
+      margin-bottom: 10px;
+      padding: 8px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+    .modal-content button {
+      margin-top: 8px;
+      width: 48%;
+      padding: 8px;
+      border-radius: 8px;
+      cursor: pointer;
+      border: none;
+      font-weight: 500;
+    }
+    .save-btn { background: #4f46e5; color: white; }
+    .cancel-btn { background: #e5e7eb; }
+
+    @media (max-width: 600px) {
+      .calendar { padding: 16px; }
+      .day { font-size: 12px; }
+      .day-number { font-size: 15px; }
+      .day-header { font-size: 10px; }
+      .quote { font-size: 13px; padding: 8px 12px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="calendar">
+    <header>
+      <button id="prev">‹ Prev</button>
+      <h1 id="month-year">Loading...</h1>
+      <button id="next">Next ›</button>
+    </header>
+    <button id="add-event" style="background:#10b981;margin-bottom:15px;">+ Add Event</button>
+    <div class="grid" id="calendar-grid"></div>
+    <div class="quote" id="month-quote"></div>
+  </div>
+
+  <!-- Add Event Modal -->
+  <div class="modal" id="event-modal">
+    <div class="modal-content">
+      <h3>Add New Event</h3>
+      <input type="text" id="event-title" placeholder="Event Title" required />
+      <input type="date" id="event-date" required />
+      <input type="time" id="event-time" required />
+      <div>
+        <button class="save-btn" id="save-event">Save</button>
+        <button class="cancel-btn" id="cancel-event">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const quotes = {
+      0: "✨ Start your year strong — January is for new beginnings!",
+      1: "💪 February reminds you: consistency beats intensity.",
+      2: "🌸 March forward with courage — you’re blooming beautifully.",
+      3: "☀️ April teaches patience; great things take time.",
+      4: "🌿 May your hard work grow into success.",
+      5: "🔥 June is your time to shine bright and show your skills.",
+      6: "🌈 July — balance hustle with happiness.",
+      7: "💡 August — ideas matter most when acted upon.",
+      8: "🍁 September — progress is better than perfection.",
+      9: "🎯 October — focus turns dreams into goals.",
+      10: "🌟 November — stay grateful, stay growing.",
+      11: "🎉 December — reflect, reset, and rise again stronger!"
+    };
+
+    const backgrounds = {
+      winter: "linear-gradient(135deg, #a5f3fc, #c7d2fe)",
+      spring: "linear-gradient(135deg, #d9f99d, #fef9c3)",
+      summer: "linear-gradient(135deg, #fed7aa, #fde68a)",
+      autumn: "linear-gradient(135deg, #c7d2fe, #fbcfe8)"
+    };
+
+    let current = new Date();
+    let events = JSON.parse(localStorage.getItem("calendarEvents")) || [];
+
+    const monthYear = document.getElementById("month-year");
+    const grid = document.getElementById("calendar-grid");
+    const prev = document.getElementById("prev");
+    const next = document.getElementById("next");
+    const quoteBox = document.getElementById("month-quote");
+
+    const modal = document.getElementById("event-modal");
+    const addBtn = document.getElementById("add-event");
+    const saveBtn = document.getElementById("save-event");
+    const cancelBtn = document.getElementById("cancel-event");
+    const titleInput = document.getElementById("event-title");
+    const dateInput = document.getElementById("event-date");
+    const timeInput = document.getElementById("event-time");
+
+    const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+    function updateBackground(month) {
+      let gradient;
+      if (month <= 2) gradient = backgrounds.winter;
+      else if (month <= 5) gradient = backgrounds.spring;
+      else if (month <= 8) gradient = backgrounds.summer;
+      else gradient = backgrounds.autumn;
+      document.body.style.background = gradient;
+    }
+
+    function renderCalendar() {
+      grid.innerHTML = "";
+      const year = current.getFullYear();
+      const month = current.getMonth();
+      const firstDay = new Date(year, month, 1);
+      const lastDay = new Date(year, month + 1, 0);
+      monthYear.textContent = firstDay.toLocaleString("default", { month: "long", year: "numeric" });
+
+      quoteBox.textContent = quotes[month];
+      updateBackground(month);
+
+      const startDay = firstDay.getDay();
+      const daysInMonth = lastDay.getDate();
+      const today = new Date();
+
+      for (let i = 0; i < startDay; i++) grid.appendChild(document.createElement("div"));
+
+      for (let d = 1; d <= daysInMonth; d++) {
+        const date = new Date(year, month, d);
+        const cell = document.createElement("div");
+        cell.className = "day";
+
+        const dayName = daysOfWeek[date.getDay()];
+        if (dayName === "Sat" || dayName === "Sun") cell.classList.add("weekend");
+        if (date < new Date(today.getFullYear(), today.getMonth(), today.getDate())) cell.classList.add("past-day");
+        if (date.toDateString() === today.toDateString()) cell.classList.add("today");
+
+        const top = document.createElement("div");
+        top.className = "day-top";
+
+        const header = document.createElement("div");
+        header.className = "day-header";
+        header.textContent = dayName;
+
+        const num = document.createElement("div");
+        num.className = "day-number";
+        num.textContent = d;
+
+        top.appendChild(header);
+        top.appendChild(num);
+        cell.appendChild(top);
+
+        const iso = date.toISOString().split("T")[0];
+        const dayEvents = events.filter(e => e.date === iso);
+        dayEvents.forEach(ev => {
+          const tag = document.createElement("div");
+          tag.className = "event";
+          tag.textContent = `${ev.title} (${ev.time})`;
+          cell.appendChild(tag);
+        });
+
+        grid.appendChild(cell);
+      }
+      updateTimeIndicator();
+    }
+
+function updateTimeIndicator() {
+  const todayCell = document.querySelector(".today");
+  if (!todayCell) return;
+  const now = new Date();
+  const percent = ((now.getHours() * 60 + now.getMinutes()) / (24 * 60)) * 100;
+  
+  // Move the line slightly lower so it doesn't overlap with the date number
+  const adjusted = 20 + (percent * 0.7 / 100) * 100; // shift lower into cell body
+  todayCell.style.setProperty("position", "relative");
+  todayCell.style.setProperty("--time-pos", `${adjusted}%`);
+  todayCell.style.setProperty("overflow", "visible");
+  todayCell.querySelector("::after");
+  todayCell.style.setProperty("top", `${adjusted}%`);
+}
+
+
+    addBtn.onclick = () => modal.classList.add("active");
+    cancelBtn.onclick = () => modal.classList.remove("active");
+    saveBtn.onclick = () => {
+      const title = titleInput.value.trim();
+      const date = dateInput.value;
+      const time = timeInput.value;
+      if (!title || !date || !time) return alert("Please fill all fields!");
+      events.push({ title, date, time });
+      localStorage.setItem("calendarEvents", JSON.stringify(events));
+      modal.classList.remove("active");
+      titleInput.value = dateInput.value = timeInput.value = "";
+      renderCalendar();
+    };
+
+    prev.onclick = () => { current.setMonth(current.getMonth() - 1); renderCalendar(); };
+    next.onclick = () => { current.setMonth(current.getMonth() + 1); renderCalendar(); };
+
+    setInterval(updateTimeIndicator, 60000);
+    renderCalendar();
+  </script>
+</body>
+</html>

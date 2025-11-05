@@ -1,0 +1,20 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root{
+  --chip-0: 255, 255, 255;
+  --chip-1: 125, 211, 252;
+  --chip-2: 167, 243, 208;
+  --chip-3: 253, 186, 116;
+  --chip-4: 248, 180, 217;
+}
+
+.scrollbar-thin::-webkit-scrollbar{
+  height: 6px;
+  width: 6px;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb{
+  background: rgba(255,255,255,.25);
+  border-radius: 9999px;
+}
